@@ -2,8 +2,17 @@ import numpy as np
 from torchtext import data
 import csv
 import ipdb
+from module import Transformer
 
 # TODO: remove urls and perhaps substitute them with 'url'
+
+
+class TrasformerManager:
+    def __init__(self):
+        pass
+
+    def train(self):
+        pass
 
 
 def to_train_test_csv():
@@ -35,6 +44,21 @@ def to_train_test_csv():
     print(len(tweets_full))
 
 
+def train():
+    model = Trasformer()
+    for epoch in range(10):
+        data_iter = data.BucketIterator(train_dataset, batch_size=4)
+        loss = torch.MSE()
+        for batch in data_iter:
+            output = model(batch.tweets)
+            loss_value = loss(output, batch.label)
+            loss.backward()
+
+
+def test():
+    pass
+
+
 def main():
     fields = {
         'id':
@@ -54,9 +78,9 @@ def main():
     for key, field in fields.items():
         field.build_vocab(train_dataset)
 
-    ipdb.set_trace()
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    data_iter = data.BucketIterator()
+    model.save()
 
 
 if __name__ == '__main__':
