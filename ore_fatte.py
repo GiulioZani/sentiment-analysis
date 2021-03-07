@@ -2,7 +2,8 @@ from datetime import datetime
 
 
 def main():
-    lessons = [(3, '21:30', '23:45'), (5, '18:30', '20:35')]
+    lessons = [(3, '21:30', '23:45'), (5, '18:30', '20:35'),
+               (6, '11:08', '13:25')]
     date_format = '%Y:%m:%d:%H:%M'
     out_format = "%d/%m/%Y  %H:%M"
     per_hour = 16
