@@ -1,6 +1,7 @@
 import torch
 from torch import nn
 import torch.nn.functional as F
+import ipdb
 
 
 class SelfAttention(nn.Module):
@@ -20,6 +21,7 @@ class SelfAttention(nn.Module):
         self.unify_heads = nn.Linear(heads * embedding_dim, embedding_dim)
 
     def forward(self, x):
+        ipdb.set_trace()
         batch_size, tweet_length, embedding_dim = x.size()
         keys = self.to_keys(x).view(batch_size, tweet_length, self.heads,
                                     embedding_dim)
@@ -48,10 +50,10 @@ class SelfAttention(nn.Module):
         return self.unify_heads(out)
 
 
-class TrasformerBlock(nn.Module):
-    def __init__(self, embedding_dim, heads, seq_length, fc_hidden_multiply=4):
+class TransformerBlock(nn.Module):
+    def __init__(self, embedding_dim, num_heads, fc_hidden_multiply=4):
         super().__init__()
-        self.attention = SelfAttention()
+        self.attention = SelfAttention(embedding_dim, num_heads)
         self.norm1 = nn.LayerNorm(embedding_dim)
         self.norm2 = nn.LayerNorm(embedding_dim)
         self.fc = nn.Sequential(
@@ -61,13 +63,13 @@ class TrasformerBlock(nn.Module):
 
     def forward(self, x):
         attended = self.attention(x)
-        x = self.norm1(x)
-        x = self.fc(x)
-        x = self.norm2(x)
+        x = self.norm1(attended + x)  # TODO: explain skip connection
+        feedforward = self.fc(x)
+        x = self.norm2(feedforward + x)
         return x
 
 
-class Trasformer(nn.Module):
+class Transformer(nn.Module):
     def __init__(self, embedding_dim, seq_length, num_heads, num_tokens, depth,
                  num_labels):
         super().__init__()
@@ -79,9 +81,10 @@ class Trasformer(nn.Module):
                                                  num_embeddings=seq_length)
         transformer_blocks = []
         for _ in range(depth):
-            transformer_blocks.append(TrasformerBlock())
+            transformer_blocks.append(
+                TransformerBlock(embedding_dim, num_heads))
 
-        self.tranformer_blocks = nn.Sequential(*transformer_blocks)
+        self.transformer_blocks = nn.Sequential(*transformer_blocks)
         self.to_probabilities = nn.Linear(embedding_dim, num_labels)
 
     def forward(self, x):
